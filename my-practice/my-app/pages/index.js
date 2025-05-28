@@ -1,5 +1,6 @@
 import { Container, Row, Col, Card, Accordion } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Head from 'next/head';
 import StarRating from '@/components/StarRating';
 import useSWR from 'swr';
@@ -51,7 +52,33 @@ export default function Home() {
               </Container><br />
             </Card>
 
-            <img src="theatre-bkrd.jpg" alt="theatre background" className={styles.headerImage} />
+            {/* this is vanilla html version using <img> (Unoptimized) */}
+            {/* <img src="theatre-bkrd.jpg" alt="theatre background" className={styles.headerImage} /> */}
+
+            {/* 1. Use Next.js <Image> to serve optimized images */}
+            <Image
+              src="/theatre-bkrd.jpg"                         // Image must be in the /public folder
+              alt="theatre background"                        // Alt text for accessibility and SEO
+              className={styles.headerImage}                  // Apply custom styling from your CSS module
+              sizes="100vw"                                   // Tells browser this image will span full viewport width
+              width={800}                                     // Required: intrinsic width for layout and aspect ratio
+              height={232}                                    // Required: intrinsic height
+              priority                                        // Preload this image for faster LCP (first paint performance)
+            />
+
+ 
+            {/*2. Remote images are hosted outside your Next.js app (on external domains).
+            To render them with <Image>, you must allow the domain in next.config.mjs
+            For more info: https://webprogrammingforappsandservices.sdds.ca/Performance-Optimizations/improving-optimizing-performance#remote-images */}
+
+            {/* <Image
+              src="https://www.senecapolytechnic.ca/content/dam/projects/seneca/campus-photos/magna-hall_tile.jpg"
+              alt='theater background'
+              className={styles.headerImage}
+              width={600}
+              height={386}
+            /> */}
+        
             <Accordion className="mt-4">
               {filteredResults?.map(movie => (
                 <Accordion.Item key={movie.id} eventKey={movie.id}>
