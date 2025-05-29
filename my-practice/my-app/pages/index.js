@@ -11,18 +11,27 @@ const StarRating = dynamic(() => import('@/components/StarRating'), {
   loading: () => <>Loading...</>,
 });
 
-import useSWR from 'swr';
+// import useSWR from 'swr';  // in 4th practice, we wont need this library
 // import _ from 'lodash';
 
 import styles from '@/styles/Home.module.css'
 
-const fetcher = (url) => fetch(url).then((res) => res.json());
+// const fetcher = (url) => fetch(url).then((res) => res.json());  // in 4th practice, we wont need this
 
-export default function Home() {
+// Forth practice: we made fetching url by getStaticProps() bcz the data it's sitting inside our lib
+//therefore to make the code optimized, we don't need to use fetcher and use SWR
+import getMovieData from '@/lib/movieData';
 
-  const { data, error } = useSWR(`/api/movies`, fetcher);
+export function getStaticProps() {
+  const data = getMovieData();
+  return { props: {staticMovies: data }}
+}
+
+export default function Home({staticMovies}) {
+
+  // const { data, error } = useSWR(`/api/movies`, fetcher);  // in 4th practice, we wont need this
   const [searchText, setSearchText] = useState("");
-  const [filteredResults, setFilteredResults] = useState();
+  const [filteredResults, setFilteredResults] = useState(staticMovies);  // included the parameter for 4th practice
   const [accordionOpened, setAccordionOpened] = useState(false);  // included for 3rd practice
 
   // included for 3rd practice
@@ -49,12 +58,16 @@ export default function Home() {
   );
 }
 
+  // useEffect(() => {
+  //   if(data && searchText)
+  //     filterResults(data, searchText);
+  //   else if(data && searchText == "")
+  //     setFilteredResults(data)
+  // }, [data, searchText])
+
   useEffect(() => {
-    if(data && searchText)
-      filterResults(data, searchText);
-    else if(data && searchText == "")
-      setFilteredResults(data)
-  }, [data, searchText])
+    if (searchText) filterResults(staticMovies, searchText);
+  }, [searchText, staticMovies]);
 
   return (
     <>
