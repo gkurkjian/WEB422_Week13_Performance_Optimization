@@ -2,7 +2,15 @@ import { Container, Row, Col, Card, Accordion } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Head from 'next/head';
-import StarRating from '@/components/StarRating';
+
+// Third practice: Dynamically Importing Components
+// import StarRating from '@/components/StarRating';  // in 3rd practice we don't need StarRating be included, bcz dynamically we'll integrate if the user uses
+// Here we're including this procedure dynamically
+import dynamic from 'next/dynamic';
+const StarRating = dynamic(() => import('@/components/StarRating'), {
+  loading: () => <>Loading...</>,
+});
+
 import useSWR from 'swr';
 // import _ from 'lodash';
 
@@ -15,6 +23,15 @@ export default function Home() {
   const { data, error } = useSWR(`/api/movies`, fetcher);
   const [searchText, setSearchText] = useState("");
   const [filteredResults, setFilteredResults] = useState();
+  const [accordionOpened, setAccordionOpened] = useState(false);  // included for 3rd practice
+
+  // included for 3rd practice
+  function accordionSelected(eventKey, e) {
+  setTimeout(() => {
+    console.log("Accordion opened")
+    setAccordionOpened(true);
+  }, 200); // allow for the accordion animation to complete
+}
 
   //  function filterResults(data, searchText) {
   //   setFilteredResults(_.filter(data, movie => movie.title.toLowerCase().includes(searchText.toLowerCase())));
@@ -90,13 +107,16 @@ export default function Home() {
               width={600}
               height={386}
             /> */}
-        
-            <Accordion className="mt-4">
+
+            {/* included onSelect={accordionSelected} for 3rd practice */}
+            <Accordion className="mt-4" onSelect={accordionSelected}>
               {filteredResults?.map(movie => (
                 <Accordion.Item key={movie.id} eventKey={movie.id}>
                   <Accordion.Header><strong>{movie.title}</strong>&nbsp;- {movie.genre}</Accordion.Header>
                   <Accordion.Body>
-                    <strong>Rating:</strong> <StarRating rating={movie.rating} /><br /><br />
+                    {/* <strong>Rating:</strong> <StarRating rating={movie.rating} /><br /><br /> */}
+                    {/* included for 3rd practice */}
+                    <strong>Rating:</strong> {accordionOpened && <StarRating rating={movie.rating} />}<br /><br />
                     <strong>Plot Summary</strong><br />{movie.plot_summary}
                   </Accordion.Body>
                 </Accordion.Item>
