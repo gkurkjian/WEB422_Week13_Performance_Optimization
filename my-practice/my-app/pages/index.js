@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Head from 'next/head';
 import StarRating from '@/components/StarRating';
 import useSWR from 'swr';
-import _ from 'lodash';
+// import _ from 'lodash';
 
 import styles from '@/styles/Home.module.css'
 
@@ -16,9 +16,21 @@ export default function Home() {
   const [searchText, setSearchText] = useState("");
   const [filteredResults, setFilteredResults] = useState();
 
-   function filterResults(data, searchText) {
-    setFilteredResults(_.filter(data, movie => movie.title.toLowerCase().includes(searchText.toLowerCase())));
-  }
+  //  function filterResults(data, searchText) {
+  //   setFilteredResults(_.filter(data, movie => movie.title.toLowerCase().includes(searchText.toLowerCase())));
+  // }
+
+  // Second practice: Dynamically Importing Libraries.
+  // We removed the lodash (import _ from 'lodash'); from the top to optimize performance.
+  // Since lodash is only needed when the user interacts with the search bar,
+  // we dynamically import it inside the filterResults() function instead of loading it with the initial page.
+  // Practice reference: https://webprogrammingforappsandservices.sdds.ca/Performance-Optimizations/improving-optimizing-performance#dynamically-importing-libraries
+  async function filterResults(data, searchText) {
+  const _ = (await import('lodash')).default;
+  setFilteredResults(
+    _.filter(data, (movie) => movie.title.toLowerCase().includes(searchText.toLowerCase()))
+  );
+}
 
   useEffect(() => {
     if(data && searchText)
