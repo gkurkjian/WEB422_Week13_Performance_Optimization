@@ -1,40 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 📈 Next.js Performance Optimization Practice
 
-## Getting Started
+This project demonstrates various real-world techniques for improving and optimizing performance in a Next.js application. The final Lighthouse performance score reaches **100%** after implementing all best practices.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✅ Overview of Optimizations (In Order)
+
+### 1. 🖼 Optimizing Images with `<Image />`
+We replaced raw HTML `<img>` tags with the optimized Next.js `<Image />` component. This improves:
+- Core Web Vitals
+- LCP (Largest Contentful Paint)
+- Lazy loading and responsive image delivery
+
+```tsx
+<Image
+  src="/theatre-bkrd.jpg"
+  alt="theatre background"
+  className={styles.headerImage}
+  width={800}
+  height={232}
+  sizes="100vw"
+  priority
+/>
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+### 2. 📦 Dynamically Importing Libraries
+Lodash was initially imported globally. We dynamically imported it instead **inside the search handler**, so it only loads **when needed**.
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+```tsx
+async function filterResults(data, searchText) {
+  const _ = (await import('lodash')).default;
+  setFilteredResults(
+    _.filter(data, movie =>
+      movie.title.toLowerCase().includes(searchText.toLowerCase())
+    )
+  );
+}
+```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+✅ This reduces the main JavaScript bundle size and improves load performance.
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+### 3. 🧱 Dynamically Importing Components
+We dynamically imported the `StarRating` component only when an accordion section is expanded, preventing unnecessary component loading.
 
-To learn more about Next.js, take a look at the following resources:
+```tsx
+import dynamic from 'next/dynamic';
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+const StarRating = dynamic(() => import('@/components/StarRating'), {
+  loading: () => <>Loading...</>,
+});
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+In JSX:
 
-## Deploy on Vercel
+```tsx
+{accordionOpened && <StarRating rating={movie.rating} />}
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+### 4. ⚡ Static Data Fetching with `getStaticProps()`
+We replaced client-side fetching (SWR and API route) with `getStaticProps()` to pre-generate movie data at build time.
+
+```tsx
+import getMovieData from '@/lib/movieData';
+
+export function getStaticProps() {
+  const data = getMovieData();
+  return { props: { staticMovies: data } };
+}
+```
+
+✅ This removes runtime fetch delays and improves TTFB.
+
+---
+
+### 5. 🚀 Lighthouse Test & Final Optimization
+
+After implementing all the above practices:
+
+```bash
+npm run build
+npm start
+```
+
+Then run Lighthouse audit. You should see:
+- ⚡ 100% Performance
+- ✅ Optimized JavaScript
+- ✅ No layout shift
+- ✅ Fast TTI and FCP
+
+---
+
+## 🧠 Summary
+
+| Practice | Benefit |
+|---------|---------|
+| `<Image />` | Optimized image delivery |
+| Dynamic `lodash` | Smaller JS bundle |
+| Dynamic `StarRating` | Avoids unnecessary component load |
+| `getStaticProps()` | Faster rendering with prebuilt data |
+| Production Lighthouse run | Validates real-world performance |
+
+---
+
+## 📎 Reference
+
+Optimization documentation:  
+[https://webprogrammingforappsandservices.sdds.ca/Performance-Optimizations/improving-optimizing-performance](https://webprogrammingforappsandservices.sdds.ca/Performance-Optimizations/improving-optimizing-performance)
+
+---
